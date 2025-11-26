@@ -55,14 +55,19 @@ override this.-=))
           }
     \else
         \usepackage{fontspec}
+        \usepackage{kotex}
+
         \setmainfont{Noto Serif CJK KR}
         \setsansfont{Noto Sans CJK KR}
         \setmonofont{D2Coding}
-        \usepackage{xeCJK}
-        \setCJKmainfont{Noto Serif CJK KR}
-        \setCJKsansfont{Noto Sans CJK KR}
-        \setCJKmonofont{Noto Sans Mono CJK KR}
+
+        \setmainhangulfont{Noto Serif CJK KR}
+        \setsanshangulfont{Noto Sans CJK KR}
+        \setmonohangulfont{D2Coding}
+
         \usepackage{unicode-math}
+        
+        \linespread{1.32}
     \fi
 
     \usepackage{fancyvrb} % verbatim replacement that allows latex
