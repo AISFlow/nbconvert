@@ -12,7 +12,7 @@ from typing import Any, Optional
 
 import jinja2
 import markupsafe
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup  # type: ignore[import-not-found]
 from jupyter_core.paths import jupyter_path
 from traitlets import Bool, Dict, Unicode, default, validate
 from traitlets.config import Config
@@ -124,9 +124,18 @@ class HTMLExporter(TemplateExporter):
     ).tag(config=True)
 
     mermaid_js_url = Unicode(
-        "https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.7.0/mermaid.esm.min.mjs",
+        "https://cdnjs.cloudflare.com/ajax/libs/mermaid/11.10.0/mermaid.esm.min.mjs",
         help="""
         URL to load MermaidJS from.
+
+        Defaults to loading from cdnjs.
+        """,
+    )
+
+    mermaid_layout_elk_js_url = Unicode(
+        "https://cdnjs.cloudflare.com/ajax/libs/mermaid-layout-elk/0.1.9/mermaid-layout-elk.esm.min.mjs",
+        help="""
+        URL to load MermaidJS ELK layout from.
 
         Defaults to loading from cdnjs.
         """,
@@ -256,7 +265,7 @@ class HTMLExporter(TemplateExporter):
         yield from super().default_filters()
         yield ("markdown2html", self.markdown2html)
 
-    def from_notebook_node(  # type:ignore[explicit-override, override]
+    def from_notebook_node(  # type:ignore[override]
         self, nb: NotebookNode, resources: Optional[dict[str, Any]] = None, **kw: Any
     ) -> tuple[str, dict[str, Any]]:
         """Convert from notebook node."""
@@ -295,7 +304,7 @@ class HTMLExporter(TemplateExporter):
         def resources_include_css(name):
             env = self.environment
             code = """<style type="text/css">\n%s</style>""" % (env.loader.get_source(env, name)[0])
-            return markupsafe.Markup(code)
+            return markupsafe.Markup(code)  # noqa:S704
 
         def resources_include_lab_theme(name):
             # Try to find the theme with the given name, looking through the labextensions
@@ -319,18 +328,18 @@ class HTMLExporter(TemplateExporter):
                         data = data.replace(local_url, f"url(data:{mime_type};base64,{base64_str})")
 
             code = """<style type="text/css">\n%s</style>""" % data
-            return markupsafe.Markup(code)
+            return markupsafe.Markup(code)  # noqa:S704
 
         def resources_include_js(name, module=False):
             """Get the resources include JS for a name. If module=True, import as ES module"""
             env = self.environment
             code = f"""<script {'type="module"' if module else ""}>\n{env.loader.get_source(env, name)[0]}</script>"""
-            return markupsafe.Markup(code)
+            return markupsafe.Markup(code)  # noqa:S704
 
         def resources_include_url(name):
             """Get the resources include url for a name."""
             env = self.environment
-            mime_type, encoding = mimetypes.guess_type(name)
+            mime_type, _encoding = mimetypes.guess_type(name)
             try:
                 # we try to load via the jinja loader, but that tries to load
                 # as (encoded) text
@@ -351,7 +360,7 @@ class HTMLExporter(TemplateExporter):
             data = base64.b64encode(data)
             data = data.replace(b"\n", b"").decode("ascii")
             src = f"data:{mime_type};base64,{data}"
-            return markupsafe.Markup(src)
+            return markupsafe.Markup(src)  # noqa:S704
 
         resources = super()._init_resources(resources)
         resources["theme"] = self.theme
@@ -362,6 +371,7 @@ class HTMLExporter(TemplateExporter):
         resources["require_js_url"] = self.require_js_url
         resources["mathjax_url"] = self.mathjax_url
         resources["mermaid_js_url"] = self.mermaid_js_url
+        resources["mermaid_layout_elk_js_url"] = self.mermaid_layout_elk_js_url
         resources["jquery_url"] = self.jquery_url
         resources["jupyter_widgets_base_url"] = self.jupyter_widgets_base_url
         resources["widget_renderer_url"] = self.widget_renderer_url
